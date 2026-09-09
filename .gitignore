@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data
+data/raw/
+data/tokenized/
+
+# Model checkpoints
+checkpoints/
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# Logs
+*.log
+slurm.out
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
