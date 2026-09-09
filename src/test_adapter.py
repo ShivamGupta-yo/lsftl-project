@@ -9,16 +9,22 @@ ADAPTER_PATH = Path(__file__).resolve().parent.parent / "checkpoints" / "lsftl-h
 SRC_LANG = "hin_Deva"
 TGT_LANG = "zsm_Latn"
 
-def load_finetuned_model():
+def get_device():
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA is not available. Refusing to run on CPU.")
+    device = torch.device("cuda")
+    print("Using device:", device)
+    print("GPU name:", torch.cuda.get_device_name(device))
+    print("GPU count visible:", torch.cuda.device_count())
+    return device
+
+def load_finetuned_model(device):
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     base_model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME, use_safetensors=False)
 
-    # Load and attach the trained LoRA adapter on top of the base model
     model = PeftModel.from_pretrained(base_model, ADAPTER_PATH)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-    return model, tokenizer, device
+    return model, tokenizer
 
 def translate(model, tokenizer, device, text, src_lang=SRC_LANG, tgt_lang=TGT_LANG):
     tokenizer.src_lang = src_lang
@@ -34,9 +40,10 @@ def translate(model, tokenizer, device, text, src_lang=SRC_LANG, tgt_lang=TGT_LA
     return tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
 
 if __name__ == "__main__":
-    model, tokenizer, device = load_finetuned_model()
+    device = get_device()
+
+    model, tokenizer = load_finetuned_model(device)
     print("Fine-tuned LoRA adapter loaded successfully.")
-    print("Using device:", device)
 
     test_sentences = [
         "नमस्ते, आप कैसे हैं?",
